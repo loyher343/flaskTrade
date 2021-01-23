@@ -28,12 +28,10 @@ app.config['MAIL_ASCII_ATTACHMENTS']=False
 mail = Mail(app)
 
 
-@app.route('/mail')
+@app.route('/')
 def hello_world():
-    msg = Message('YOOOO', recipients=[RECIPIENT])
-    msg.html = '<b>This is the new test. yo</b>'
-    mail.send(msg)
-    return 'Message sent :)'
+
+    return 'yo :)'
 
 def space(str):
     return print('     '+str+'     ')
