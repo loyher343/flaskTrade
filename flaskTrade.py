@@ -28,7 +28,6 @@ app.config['MAIL_ASCII_ATTACHMENTS']=False
 mail = Mail(app)
 
 
-
 @app.route('/mail')
 def hello_world():
     msg = Message('YOOOO', recipients=[RECIPIENT])
@@ -55,6 +54,7 @@ def buy_stock():
     space("accountInfo")
     #acc_info['day_count']=4
 
+
     position_request = requests.get(POSITIONS_URL, headers=HEADERS)
     position_response = json.loads(position_request.content)
     print(position_response)
@@ -62,7 +62,6 @@ def buy_stock():
     position = {
         "message":  ' ',
         "qty": ' '
-
     }
     
     #request = app.current_request
@@ -82,11 +81,11 @@ def buy_stock():
     # print(type(acc_info["regt_BP"]))
     # print(data['limit_price'])
     
-    #stops if daytrade exceeded
+    #stops if daytrade exceeded or not enough BP
     if acc_info['day_count'] > 3:
-        return 
-
-
+        return 'Day trade exceeded'
+    elif float(acc_info['regt_BP']) < float(data['limit_price']):
+        return 'not enough BP'
 
 
     if 'message' in position_response:
@@ -96,13 +95,17 @@ def buy_stock():
             "qty": position_response['qty']
         }
 
+
+    mail_message = 'MERP'
     if data['side'] == 'buy':
         buy_shares = float(acc_info["regt_BP"])//float(data['limit_price'])
         print(buy_shares)
         data['qty'] = buy_shares
+        mail_message = 'Buying '+str(buy_shares)+' shares'
     elif data['side'] == 'sell':
         data['qty'] == position['qty']
-    print(data)
+        mail_message = 'Selling '+str(data['qty'])+' shares'
+    print(buy_shares)
 
 
 
@@ -114,10 +117,13 @@ def buy_stock():
 
     print(response)
     #print('///////',response['id'],'////////')
-   
+    msg = Message(SUBJECT, recipients=[RECIPIENT])
+    msg.html = '<b>'+mail_message+'<br> Equity at '+str(account_response['equity'])+'</b>'
+    mail.send(msg)
     return {
         'message': 'I bought the stock',
         'webhook_message': webhook_message
+        
     }
 
 
